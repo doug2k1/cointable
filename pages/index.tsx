@@ -59,5 +59,6 @@ export async function getStaticProps() {
         price: coin.quote.USD.price,
       })),
     },
+    revalidate: 60 * 60, // 1h
   }
 }
