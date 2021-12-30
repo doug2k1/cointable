@@ -3,9 +3,15 @@ import type { NextPage } from 'next'
 import Head from 'next/head'
 import styles from '../styles/Home.module.css'
 
-const Home: NextPage<{ coins: { symbol: string; price: number }[] }> = ({
-  coins,
-}) => {
+const Home: NextPage<{
+  coins: {
+    symbol: string
+    price: number
+    change24h: number
+    change7d: number
+    change30d: number
+  }[]
+}> = ({ coins }) => {
   return (
     <div className={styles.container}>
       <Head>
@@ -19,6 +25,9 @@ const Home: NextPage<{ coins: { symbol: string; price: number }[] }> = ({
             <tr>
               <th>Coin</th>
               <th>Price</th>
+              <th>24h</th>
+              <th>7d</th>
+              <th>30d</th>
             </tr>
           </thead>
           <tbody>
@@ -26,6 +35,9 @@ const Home: NextPage<{ coins: { symbol: string; price: number }[] }> = ({
               <tr key={coin.symbol}>
                 <td>{coin.symbol}</td>
                 <td>{coin.price}</td>
+                <td>{coin.change24h}</td>
+                <td>{coin.change7d}</td>
+                <td>{coin.change30d}</td>
               </tr>
             ))}
           </tbody>
@@ -49,14 +61,26 @@ export async function getStaticProps() {
     params: { symbol: process.env.COINS },
   })
 
-  const coinData: { symbol: string; quote: { USD: { price: number } } }[] =
-    Object.values(response.data.data)
+  const coinData: {
+    symbol: string
+    quote: {
+      USD: {
+        price: number
+        percent_change_24h: number
+        percent_change_7d: number
+        percent_change_30d: number
+      }
+    }
+  }[] = Object.values(response.data.data)
 
   return {
     props: {
       coins: coinData.map((coin) => ({
         symbol: coin.symbol,
         price: coin.quote.USD.price,
+        change24h: coin.quote.USD.percent_change_24h,
+        change7d: coin.quote.USD.percent_change_7d,
+        change30d: coin.quote.USD.percent_change_30d,
       })),
     },
     revalidate: 60 * 60, // 1h
