@@ -1,3 +1,4 @@
+import axios from 'axios'
 import type { NextPage } from 'next'
 import Head from 'next/head'
 import styles from '../styles/Home.module.css'
@@ -36,15 +37,27 @@ const Home: NextPage<{ coins: { symbol: string; price: number }[] }> = ({
 
 export default Home
 
+const api = axios.create({
+  baseURL: 'https://pro-api.coinmarketcap.com/v1/cryptocurrency',
+  headers: {
+    'X-CMC_PRO_API_KEY': process.env.APIKEY!,
+  },
+})
+
 export async function getStaticProps() {
+  const response = await api.get('/quotes/latest', {
+    params: { symbol: process.env.COINS },
+  })
+
+  const coinData: { symbol: string; quote: { USD: { price: number } } }[] =
+    Object.values(response.data.data)
+
   return {
     props: {
-      coins: [
-        {
-          symbol: 'BTC',
-          price: 49999,
-        },
-      ],
-    }, // will be passed to the page component as props
+      coins: coinData.map((coin) => ({
+        symbol: coin.symbol,
+        price: coin.quote.USD.price,
+      })),
+    },
   }
 }
